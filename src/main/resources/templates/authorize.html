@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Authorize</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<script type = "text/javascript" 
+         src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="/bootstrap.min.css" media="screen"/>
+</head>
+
+<script>
+
+        function setStatus(obj,status){
+        	var transId = $("#transId"+obj.name).val();
+            var url = "authorize/"+status+"/"+transId;
+			
+            $.post(url, { transId : transId , status : status }, function(data) {
+            	$('#results'+obj.name).css('display','none');
+                $('#message'+obj.name).html(data).hide().slideDown('slow');
+            } );
+        }
+        
+      //In this function we are cheking whether the status is already modified for the particular mailId
+        function getStatus(obj,s){
+        	var transId = $("#transId"+obj.name).val();
+        	var statusId = $("#status"+obj.name).val();
+            var url = "authorize/"+transId+"?status="+statusId;
+			
+            $.get(url, function(data) {
+            	if(data.trim() == '0'){
+            		//if there is no change in DB we modifying the status.
+            		setStatus(obj,s);
+            	}else{
+	            	$('#results'+obj.name).css('display','none');
+	                $('#message'+obj.name).html(data).hide().slideDown('slow');
+            	}
+            } );
+        }
+        
+
+</script>
+<body>
+	<div class="container">
+      <div class="page-header" id="banner">
+        <div class="row">
+          <div class="col-lg-8 col-md-7 col-sm-6">
+            <h1>Authorize</h1>
+           	<fieldset>
+           		<div class="form-group">
+                    <div class="col-lg-6 col-lg-offset-2">
+						<div class="input-group">
+							<table class="table table-striped table-hover">
+								<thead>
+									<tr>
+										<th>Mail</th>
+										<th>Accept or Reject</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="transaction : ${transactions}">
+										<td th:text="${transaction.mailId}"></td>
+										<td>
+											<input type="hidden" th:id="status+${transaction.id}" name="status" th:value="${transaction.status}"/>
+											<input type="hidden" th:id="transId+${transaction.id}" name="transId" th:value="${transaction.id}"/>
+											<div th:id="results+${transaction.id}" th:if="${transaction.status eq 'N'}">
+												<input type="button" th:name="${transaction.id}" value="Accept" onclick="getStatus(this,'A');"/>
+												<input type="button" th:name="${transaction.id}" value="Reject" onclick="getStatus(this,'R');"/>
+											</div>
+											
+											<div th:id="message+${transaction.id}"></div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+                    </div>
+               	</div>
+           	</fieldset>
+          </div>
+        </div>
+      </div>
+	</div>
+
+</body>
+</html>
